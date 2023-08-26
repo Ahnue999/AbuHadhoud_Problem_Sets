@@ -78,6 +78,7 @@ void AddClients () {
         cout << "Added succefully!!\nDo You Want to Add More Clients ? [y/n]  \n";
         cin >> Answer;
     } while (toupper(Answer) == 'Y');
+    cout << "\n All clients were added to the file [" << ClientsFileName << "]";
 }
 int main()
 {
