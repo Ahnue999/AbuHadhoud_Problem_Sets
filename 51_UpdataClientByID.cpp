@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <iomanip>
 using namespace std;
 
 const string FileName = "Client.txt";
@@ -12,8 +11,16 @@ struct stData {
     string Name;
     string Phone;
     double AccountBalance;
+    bool ToDelete = false;
 };
 
+string ReadString(string Massage)
+{
+    string TheString;
+    cout << Massage;
+    getline(cin, TheString);
+    return TheString;
+}
 vector<string> Split(string TheString, string Delim = " ")
 {
     vector<string> vWords;
@@ -71,6 +78,16 @@ vector<stData> LoadFileToVector (string FileName) {
     return vClientsData;
 }
 
+bool SearchClient(string ID, vector<stData> Clients, stData& Client) {
+    for (stData &C : Clients) {
+        if (C.AccountNumber == ID) {
+            Client = C;
+            return true;
+        }
+    } 
+    return false;
+}
+
 void PrintRecord (stData Data) {
     cout << "Account Numer : " << Data.AccountNumber << endl;
     cout << "PIN Code : " << Data.PINCode << endl;
@@ -79,15 +96,13 @@ void PrintRecord (stData Data) {
     cout << "Account Balance : " << Data.AccountBalance << endl;
 }
 
-bool SearchClient(string ID, stData& Client) {
-    vector<stData> ClientsData = LoadFileToVector(FileName);
-    for (stData &C : ClientsData) {
-        if (C.AccountNumber == ID) {
-            Client = C;
-            return true;
-        }
-    } 
-    return false;
+stData FillClientData(stData &Data) {
+    cout << ("Enter Your PIN Code : ");
+    getline(cin >> ws, Data.PINCode);
+    Data.Name = ReadString("Enter Your Name : ");
+    Data.Phone = ReadString("Enter Your Phone Number: ");
+    Data.AccountBalance = stod(ReadString("Enter Your Account Balance : "));
+    return Data;
 }
 
 string ConvertRecordToLine(stData Data, string Seperator = "#//#") {
@@ -102,60 +117,52 @@ string ConvertRecordToLine(stData Data, string Seperator = "#//#") {
     return Line;
 }
 
-void SaveDataToFile(string FileName, vector<string> &TheVector)
-{
+void LoadVectorToFile(string FileName, vector<stData> Clients) {
     fstream MyFile;
+
     MyFile.open(FileName, ios::out);
-
-    if (MyFile.is_open())
-    {
-	for (string &Line : TheVector)
-	{
-            if (Line != "")
-            {
-                MyFile << Line << endl;
+    
+    if (MyFile.is_open()) {
+        for (stData &C : Clients) {
+            if (!C.ToDelete) {
+                MyFile << ConvertRecordToLine(C) << endl;
             }
-	}
+        } 
     }
-    MyFile.close();
 }
 
-void ClientToFile(string FileName, string Line) {
-    
-    fstream ClientFile;
+bool UpdateClientByID(vector<stData> &Clients, string ID) {
+    char Answer = 'N';
+    stData Client;
 
-    ClientFile.open(FileName, ios::out | ios::app );
-    if (ClientFile.is_open()) {
-        ClientFile << Line << endl;
-        ClientFile.close();
-    }
-    
-}
+    if (SearchClient(ID, Clients, Client)) {
+        PrintRecord(Client);
 
+        cout << "Are you sure you want to update this record\n";
+        cin >> Answer;
+        
+        if (toupper(Answer) == 'Y') {
+            for (stData &C : Clients)
+            {
+                if (C.AccountNumber == ID)
+                {
+                    C = FillClientData(C);
+                    break;
+                }
+            }
+            LoadVectorToFile(FileName, Clients);
 
-vector<stData> DeleteClient (vector<stData> &Clients, string ID) {
-    for (int i = 0; i < Clients.size() - 1; i++) {
-        if (Clients[i].AccountNumber == ID) {
-            Clients.erase(Clients.begin() + i);
+            cout << "Client was Updated successfully!\n";
+            Clients = LoadFileToVector(FileName);
         }
     }
-    vector<string> LinesVector;
-    for (stData &Line : Clients) {
-        LinesVector.push_back(ConvertRecordToLine(Line));
+    else {
+        cout << "Client was not found!\n";
     }
-    SaveDataToFile(FileName, LinesVector);
 }
-
 int main() {
     string ID = ReadClientAccountInfo();
     vector<stData> Clients = LoadFileToVector(FileName);
-    stData Client;
-    SearchClient(ID, Client);
-    PrintRecord(Client);
-    char Answer;
-    cout << "Are you sure you want to delete this client? \n";
-    cin >> Answer;
-    if (toupper(Answer) == 'Y') {
-        DeleteClient(Clients, ID);
-    }
+
+    UpdateClientByID(Clients, ID);
 }
