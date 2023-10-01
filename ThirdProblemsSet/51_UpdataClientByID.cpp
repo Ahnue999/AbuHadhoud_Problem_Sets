@@ -96,7 +96,7 @@ void PrintRecord (stData Data) {
     cout << "Account Balance : " << Data.AccountBalance << endl;
 }
 
-stData FillClientData(stData &Data) {
+stData ChangeClientData(stData &Data) {
     cout << ("Enter Your PIN Code : ");
     getline(cin >> ws, Data.PINCode);
     Data.Name = ReadString("Enter Your Name : ");
@@ -146,7 +146,7 @@ bool UpdateClientByID(vector<stData> &Clients, string ID) {
             {
                 if (C.AccountNumber == ID)
                 {
-                    C = FillClientData(C);
+                    C = ChangeClientData(C);
                     break;
                 }
             }

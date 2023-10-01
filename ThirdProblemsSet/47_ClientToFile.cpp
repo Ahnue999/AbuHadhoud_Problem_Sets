@@ -20,13 +20,6 @@ string ReadString(string Massage)
     return TheString;
 }
 
-int ReadNum(string Massage) {
-    int Num;
-    cout << Massage;
-    cin >> Num;
-    return Num;
-}
-
 stData FillClientData() {
     stData Data;
     cout << "Enter Your Account Number : ";
